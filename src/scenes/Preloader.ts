@@ -24,6 +24,9 @@ export default class Preloader extends Phaser.Scene
 
         this.load.image(TextureKeys.Bookcase1, 'house/object_bookcase1.png')
         this.load.image(TextureKeys.Bookcase2, 'house/object_bookcase2.png')
+        this.load.image(TextureKeys.LaserEnd, 'house/object_laser_end.png')
+        this.load.image(TextureKeys.LaserMiddle, 'house/object_laser.png')
+
     }
 
     create()
@@ -40,6 +43,33 @@ export default class Preloader extends Phaser.Scene
             frameRate: 10,
             repeat: -1
         })
-        this.scene.start('game')
+
+        this.anims.create({
+            key: AnimationKeys.Fly,
+            frames: this.anims.generateFrameNames(TextureKeys.RocketMouse,{
+                start: 1,
+                end: 2,
+                prefix: 'flame',
+                suffix: '.png'
+            }),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: AnimationKeys.Flying,
+            frames: [{
+                key: TextureKeys.RocketMouse,
+                frame: 'flying.png'
+            }]
+        })
+        this.anims.create({
+            key: AnimationKeys.Fall,
+            frames: [{
+                key: TextureKeys.RocketMouse,
+                frame: 'rocketmouse_fall01.png'
+            }]
+        })
+        this.scene.start(SceneKeys.Game)
     }
 }
