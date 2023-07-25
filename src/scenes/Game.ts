@@ -4,6 +4,7 @@ import SceneKeys from '~/consts/SceneKeys'
 import AnimationKeys from '~/consts/AnimationKeys'
 import RocketMouse from '~/game/RocketMouse'
 import LaserObstacle from '~/game/LaserObstacle'
+import MouseState from '~/game/RocketMouse'
 
 export default class Game extends Phaser.Scene
 {
@@ -22,6 +23,8 @@ export default class Game extends Phaser.Scene
     private coins!: Phaser.Physics.Arcade.StaticGroup
     private scoreLabel !: Phaser.GameObjects.Text
     private score = 0
+
+    private cheeses!: Phaser.Physics.Arcade.StaticGroup
 
     init(){
         this.score = 0
@@ -87,11 +90,14 @@ export default class Game extends Phaser.Scene
         this.coins = this.physics.add.staticGroup()
         this.spawnCoins()
 
+        this.cheeses = this.physics.add.staticGroup()
+        this.spawnCheeses()
+
         this.laserObstacle = new LaserObstacle(this, 800, 100)
         this.add.existing(this.laserObstacle)
         //this.laserObstacle.setSize
 
-        const mouse = new RocketMouse(this, width*0.5, height - 30)
+        const mouse = new RocketMouse(this, width*0.1, height - 100)
         this.add.existing(mouse)
 
         
@@ -124,6 +130,14 @@ export default class Game extends Phaser.Scene
             undefined,
             this
         )
+
+        this.physics.add.overlap(
+            this.cheeses,
+            mouse,
+            this.handleCollectCheese,
+            undefined,
+            this
+        )
         
         this.scoreLabel = this.add.text(10, 10, `Score: ${this.score}`, {
             fontSize: '24px',
@@ -149,6 +163,25 @@ export default class Game extends Phaser.Scene
         this.score += 1
 
         this.scoreLabel.text = `Score: ${this.score}`
+    }
+
+    private handleCollectCheese(
+        obj1: Phaser.GameObjects.GameObject,
+        obj2: Phaser.GameObjects.GameObject
+    )
+    {
+        const cheese = obj2 as Phaser.Physics.Arcade.Sprite
+        const mouse = obj1 as RocketMouse
+        if (mouse.getState()!== 1)
+        {
+            return
+        }
+        mouse.powerUp(true)
+        this.cheeses.killAndHide(cheese)
+
+        cheese.body.enable = false
+
+        
     }
 
     private spawnCoins()
@@ -179,9 +212,51 @@ export default class Game extends Phaser.Scene
             const body = coin.body as Phaser.Physics.Arcade.StaticBody
             body.setCircle(body.width * 0.5)
             body.enable = true
-
+            body.updateFromGameObject()
             x += coin.width * 5
         }
+        
+        
+
+    
+        
+    }
+
+    private spawnCheeses()
+    {
+        this.cheeses.children.each(child => {
+            const cheese = child as Phaser.Physics.Arcade.Sprite
+            this.cheeses.killAndHide(cheese)
+            cheese.body.enable = false
+            //cheese.setDisplaySize(10, 10)
+
+        })
+    
+        const scrollX = this.cameras.main.scrollX
+        const rightEdge = scrollX + this.scale.width
+
+        let x = rightEdge + 100
+
+        const numCheese = Phaser.Math.Between(1,20)
+
+        for (let i = 0; i< numCheese; ++i){
+            const cheese = this.cheeses.get(
+                x,
+                Phaser.Math.Between(100, this.scale.height- 100),
+                TextureKeys.Cheese
+            ) as Phaser.Physics.Arcade.Sprite
+            
+            cheese.setVisible(true)
+            cheese.setActive(true)
+
+            const body = cheese.body as Phaser.Physics.Arcade.StaticBody
+            body.enable = true
+            body.setCircle(body.width * 0.2)
+
+            body.updateFromGameObject()
+            x += cheese.width * 25
+        }
+        
 
     
         
@@ -292,7 +367,11 @@ export default class Game extends Phaser.Scene
                 })
                 
             this.bookcase2.visible = !overlap
+            this.spawnCoins()
+            this.spawnCheeses()
+
         }
+        //this.spawnCoins()
      }
 
     update(t: number, dt: number)

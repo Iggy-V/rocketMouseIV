@@ -4,7 +4,8 @@ import AnimationKeys from '~/consts/AnimationKeys'
 import SceneKeys from '~/consts/SceneKeys'
 
 enum MouseState{
-    Running,
+    Running = 1,
+    PoweredUp,
     Killed,
     Dead
 }
@@ -34,7 +35,7 @@ export default class RocketMouse extends Phaser.GameObjects.Container
         scene.physics.add.existing(this)
 
         const body = this.body as Phaser.Physics.Arcade.Body
-        body.setSize(this.mouse.width, this.mouse.height)
+        body.setSize(this.mouse.width * 0.3, this.mouse.height*0.3)
         body.setOffset(this.mouse.width * -0.5, -this.mouse.height)
 
 
@@ -44,12 +45,24 @@ export default class RocketMouse extends Phaser.GameObjects.Container
     {
         this.flames.setVisible(enabled)
     }
+    async powerUp(enabled: boolean)
+    {
+    
+        this.mouseState = MouseState.PoweredUp
+        await this.delay(10000);
+        this.mouseState = MouseState.Running
+    }
+    
+    delay(ms: number) {
+        return new Promise( resolve => setTimeout(resolve, ms) );
+    }
     kill()
     {
         if (this.mouseState !== MouseState.Running)
         {
             return
         }
+       
 
         this.mouseState = MouseState.Killed
 
@@ -60,7 +73,9 @@ export default class RocketMouse extends Phaser.GameObjects.Container
         body.setVelocity(300, 0)
         this.enableJetpack(false)
     }
-
+    getState(){
+        return this.mouseState
+    }
     preUpdate(){
         const body = this.body as Phaser.Physics.Arcade.Body
 
@@ -68,6 +83,7 @@ export default class RocketMouse extends Phaser.GameObjects.Container
         {
             case MouseState.Running:
             {
+                this.mouse.clearTint()
                 if (this.cursors.space?.isDown)
                 {
                     body.setAccelerationY(-600)
@@ -89,7 +105,30 @@ export default class RocketMouse extends Phaser.GameObjects.Container
                     this.mouse.play(AnimationKeys.Fall, true)
                 }
                 break
-            } 
+            }
+            case MouseState.PoweredUp:
+                this.mouse.setTintFill(0, 1000,-7000,0)
+                if (this.cursors.space?.isDown)
+                {
+                    body.setAccelerationY(-600)
+                    this.enableJetpack(true)
+                    this.mouse.play(AnimationKeys.Flying, true)
+                }
+                else
+                {
+                    body.setAccelerationY(0)
+                    this.enableJetpack(false)
+                }
+
+                if (body.blocked.down)
+                {
+                    this.mouse.play(AnimationKeys.Run, true)
+                }
+                else if (body.velocity.y > 0)
+                {
+                    this.mouse.play(AnimationKeys.Fall, true)
+                }
+                break 
             case MouseState.Killed:
             {
                 body.velocity.x *= 0.99
