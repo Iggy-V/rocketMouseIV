@@ -1,4 +1,4 @@
-![](https://github.com/Iggy-V/rocketMouseIV/RocketMouse.gif)
+![](https://github.com/Iggy-V/rocketMouseIV/blob/main/RocketMouse.gif)
 
 My interpretation of the Rocket Mouse project by Ourcade. Thank you for the tutorial and free resources.
 
