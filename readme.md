@@ -1,3 +1,5 @@
+![](https://github.com/Iggy-V/rocketMouseIV/RocketMouse.gif)
+
 My interpretation of the Rocket Mouse project by Ourcade. Thank you for the tutorial and free resources.
 
 This is a project created using TypeScript
